@@ -1,0 +1,1 @@
+you can rename tab by right clicking it and selecting "Rename Tab"

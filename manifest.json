@@ -1,0 +1,22 @@
+{
+	"manifest_version": 2,
+	"name": "Tab Renamer",
+	"version": "1.0",
+	"description": "Allows you to rename tabs",
+	
+	"permissions": [
+		"activeTab", 
+		"menus"
+	],
+	
+	"background": {
+		"scripts": ["background.js"]
+	},
+
+	"content_scripts": [
+		{
+			"matches": ["*://*/*"],
+			"js": ["tab_renamer.js"]
+		}
+	]
+}
