@@ -5,8 +5,11 @@
 	"description": "Allows you to rename tabs",
 	
 	"permissions": [
-		"activeTab", 
-		"menus"
+		"activeTab",
+		"tabs", 
+		"menus",
+		"storage",
+		"<all_urls>"
 	],
 	
 	"background": {
@@ -15,7 +18,7 @@
 
 	"content_scripts": [
 		{
-			"matches": ["*://*/*"],
+			"matches": ["<all_urls>"],
 			"js": ["tab_renamer.js"]
 		}
 	]
