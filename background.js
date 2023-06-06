@@ -1,4 +1,4 @@
-let tab_list = load_map();
+let tab_list = new Map();
 
 // create "Rename Tab" context menu item
 browser.menus.create({
@@ -9,16 +9,27 @@ browser.menus.create({
 	console.info("\"Rename Tab\" menu item successfully created.")
 );
 
-
 // notify tab to pop up renaming menu
 function rename(_info, tab) {
 	browser.tabs.sendMessage(tab.id, { action: "rename" })
-		.then((newName) => {
-			if(newName == undefined) {
+		.then((response) => {
+			// user pressed cancel button; do nothing
+			if(response == undefined) return;
+
+			// let custom_title = response.title;
+			// let default_title = response.default;
+
+			// if rename field is empty remove from map
+			if(response.title == undefined) {
 				tab_list.delete(tab.id+"");
-			} else {
-				tab_list.set(tab.id+"", newName);
-			}
+				update_map();
+				return;
+			} 
+			// save new and default tab name
+			tab_list.set(tab.id+"", { 
+				title: response.title,
+				default: response.default
+			});
 			update_map();
 		});
 };
@@ -27,11 +38,33 @@ function rename(_info, tab) {
 // refreshed or is finished loading
 function update_on_refresh(_request, sender, _sendResponse) {
 	if(!tab_list.has(sender.tab.id+"")) return;
-	let custom_title = tab_list.get(sender.tab.id+"");
-	let default_title = sender.tab.title;
+	let map = tab_list.get(sender.tab.id+"");
+	let custom_title = map.title;
 
-	browser.tabs
-		.sendMessage(sender.tab.id,{ action: "update", title: custom_title, default: default_title });
+	// set default title to refreshed page's initial title
+	map.default = sender.tab.title;
+	update_map();
+
+	// notify tab of these changes
+	browser.tabs.sendMessage(sender.tab.id,{ 
+		action: "update", 
+		title: custom_title, 
+		default: map.default
+	});
+}
+
+// sync tab information on extension reload
+async function on_reload() {
+	await load_map();
+	// send stored information to each saved tab
+	tab_list.forEach((value, key) => {
+		let tab_id = parseInt(key);
+		browser.tabs.sendMessage(tab_id, { 
+			action: "reload", 
+			title: value.title,
+			default: value.default
+		});
+	});
 }
 
 // remove closed tab from the list & storage
@@ -51,12 +84,16 @@ function update_map() {
 // load the map from storage
 async function load_map() {
 	let map = (await browser.storage.local.get()).map;
-	if(map == undefined) return new Map();
+	if(map == undefined) {
+		tab_list = new Map();
+		return;
+	}
 	tab_list = new Map(Object.entries(map));
 	console.info("Successfully loaded stored map.");
 }
 
 browser.menus.onClicked.addListener(rename);
 browser.runtime.onMessage.addListener(update_on_refresh);
+browser.runtime.onInstalled.addListener(on_reload);
 browser.tabs.onRemoved.addListener(close);
 
