@@ -96,4 +96,3 @@ browser.menus.onClicked.addListener(rename);
 browser.runtime.onMessage.addListener(update_on_refresh);
 browser.runtime.onInstalled.addListener(on_reload);
 browser.tabs.onRemoved.addListener(close);
-
