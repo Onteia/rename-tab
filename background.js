@@ -11,13 +11,14 @@ browser.menus.create({
 
 // notify tab to pop up renaming menu
 function rename(_info, tab) {
+	// switch to tab
+	browser.tabs.update(tab.id, { active: true });
+
+	// notify tab to prompt user
 	browser.tabs.sendMessage(tab.id, { action: "rename" })
 		.then((response) => {
 			// user pressed cancel button; do nothing
 			if(response == undefined) return;
-
-			// let custom_title = response.title;
-			// let default_title = response.default;
 
 			// if rename field is empty remove from map
 			if(response.title == undefined) {
