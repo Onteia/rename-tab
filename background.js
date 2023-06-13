@@ -93,8 +93,13 @@ function title_changed(tab_id, changed, _tab) {
 // update the local map in storage
 // so renamed tabs persist
 function update_map() {
-	let obj = Object.fromEntries(tab_list);
-	browser.storage.local.set({ map: obj });
+	if(tab_list.size >= 1) {
+		let obj = Object.fromEntries(tab_list);
+		browser.storage.local.set({ map: obj });
+	} else {
+		// clear storage if map is empty
+		browser.storage.local.clear();
+	}
 }
 
 // load the map from storage
