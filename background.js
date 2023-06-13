@@ -60,7 +60,7 @@ async function on_reload() {
 	tab_list.forEach((value, key) => {
 		let tab_id = parseInt(key);
 		browser.tabs.sendMessage(tab_id, { 
-			action: "reload", 
+			action: "update", 
 			title: value.title,
 			default: value.default
 		});
