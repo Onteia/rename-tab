@@ -74,6 +74,21 @@ function close(tab_id, _info) {
 	update_map();
 }
 
+// update the title according to the hashmap
+// when title changes
+function title_changed(tab_id, changed, _tab) {
+	if(!tab_list.has(tab_id+"")) return;
+	if(changed.title == undefined) return;
+	let map = tab_list.get(tab_id+"");
+	if(changed.title == map.title) return;
+
+	browser.tabs.sendMessage(tab_id,{ 
+		action: "update", 
+		title: map.title, 
+		default: map.default
+	}).catch(_ => { /* tab hasn't loaded yet */ });
+}
+
 // update the local map in storage
 // so renamed tabs persist
 function update_map() {
@@ -96,3 +111,4 @@ browser.menus.onClicked.addListener(rename);
 browser.runtime.onMessage.addListener(update_on_refresh);
 browser.runtime.onInstalled.addListener(on_reload);
 browser.tabs.onRemoved.addListener(close);
+browser.tabs.onUpdated.addListener(title_changed);

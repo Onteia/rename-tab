@@ -1,7 +1,5 @@
-const DELAY_IN_MS = 15; // every 15ms, update the title
 let default_title = document.title;
 let custom_title = undefined;
-let intervalId = undefined;
 
 browser.runtime.sendMessage({
 	action: "ready"
@@ -15,7 +13,6 @@ browser.runtime.onMessage.addListener((response) => {
 			if(newName === null) return;
 			// if "Rename Tab" is left empty, reset title
 			if(newName === "" || newName === undefined) {
-				window.clearInterval(intervalId);
 				custom_title = undefined;
 				document.title = default_title;
 				return Promise.resolve({
@@ -25,8 +22,7 @@ browser.runtime.onMessage.addListener((response) => {
 			} 
 			// otherwise, rename tab and save changes
 			custom_title = newName;
-			window.clearInterval(intervalId);
-			intervalId = window.setInterval(update, DELAY_IN_MS);
+			update();
 			return Promise.resolve({ 
 				title: custom_title,
 				default: default_title
@@ -34,14 +30,12 @@ browser.runtime.onMessage.addListener((response) => {
 		case "update":
 			default_title = response.default;
 			custom_title = response.title;
-			window.clearInterval(intervalId);
-			intervalId = window.setInterval(update, DELAY_IN_MS);
+			update();
 			break;
 		case "reload":
 			custom_title = response.title;
 			default_title = response.default;
-			window.clearInterval(intervalId);
-			intervalId = window.setInterval(update, DELAY_IN_MS);
+			update();
 			break;
 	}
 });
